@@ -13,7 +13,7 @@ namespace CloudChampion.Order.Controllers
         private readonly ILogger<OrderController> _logger;
         private readonly DaprClient daprClient;
         private string orderKey(Guid orderId) => $"OrderProcessing-{orderId}";
-        private const string stateManagmentName = "state-managment";
+        private const string stateManagementName = "state-management";
 
         public OrderController(ILogger<OrderController> logger, DaprClient daprClient)
         {
@@ -27,7 +27,7 @@ namespace CloudChampion.Order.Controllers
             var orderInserting = orderToInsert with { CreatedDate = DateTime.UtcNow };
             // Save State
             var stateOption = new StateOptions { Concurrency = ConcurrencyMode.FirstWrite };
-            await daprClient.SaveStateAsync(stateManagmentName, orderKey(orderInserting.OrderId), orderInserting, stateOption);
+            await daprClient.SaveStateAsync(stateManagementName, orderKey(orderInserting.OrderId), orderInserting, stateOption);
             // Notify Created State
             await NotifyOrderStatus(orderInserting.OrderId, OrderStatus.Created);
 
@@ -40,14 +40,14 @@ namespace CloudChampion.Order.Controllers
             await daprClient.PublishEventAsync("pubsub", "orderprocessed", @event, HttpContext.RequestAborted);
 
             // Save State
-            await daprClient.SaveStateAsync(stateManagmentName, orderKey(orderInserted.OrderId), orderInserted, stateOption);
+            await daprClient.SaveStateAsync(stateManagementName, orderKey(orderInserted.OrderId), orderInserted, stateOption);
             return Ok();
         }
 
         [HttpGet("{orderId}")]
         public async Task<IActionResult> Get(string orderId)
         {
-            var currentStatus = await daprClient.GetStateAsync<Order>(stateManagmentName, orderKey(Guid.Parse(orderId)), ConsistencyMode.Strong);
+            var currentStatus = await daprClient.GetStateAsync<Order>(stateManagementName, orderKey(Guid.Parse(orderId)), ConsistencyMode.Strong);
             return Ok(currentStatus);
         }
 

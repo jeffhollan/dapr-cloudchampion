@@ -2,15 +2,15 @@
   type: pubsub.azure.servicebus
   version: v1
   metadata:
-  - name: connectionString
-    secretRef: connectionstring
+    - name: connectionString
+      secretRef: connectionstring
 - name: state-management
   type: state.azure.blobstorage
   version: v1
   metadata:
-  - name: accountName
-    value: "containerappstosato"
-  - name: accountKey
-    secretRef: accountkey
-  - name: containerName
-    value: "dapr"
+    - name: accountName
+      value: "jehollandebug"
+    - name: accountKey
+      secretRef: accountkey
+    - name: containerName
+      value: "dapr"

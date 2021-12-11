@@ -1,16 +1,13 @@
-$RESOURCE_GROUP="ContainerApps-Tosato"
-$LOCATION="canadacentral"
-$CONTAINERAPPS_ENVIRONMENT="development"
-$LOG_ANALYTICS_WORKSPACE="workspace-logs"
-$STORAGE_ACCOUNT="containerappstosato"
-$ACR="containerappstosato.azurecr.io"
-$ACR_Login="containerappstosato"
-$ACR_Password="$(az acr credential show -n $ACR --query "passwords[0].value" -o tsv)"
-$SB_CONNECTIONSTRING="Endpoint=sb://containerappstosato.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=5GsREAqb3FNDinAJDWGXHZsdnCsgskleOIeg9p3ivKM="
+$RESOURCE_GROUP = "d-debug"
+$LOCATION = "canadacentral"
+$CONTAINERAPPS_ENVIRONMENT = "env"
+$LOG_ANALYTICS_WORKSPACE = "workspace-logs"
+$STORAGE_ACCOUNT = "jehollandebug"
+$ACR = "jeffhollan.azurecr.io"
+$ACR_Login = "jeffhollan"
+$ACR_Password = "$(az acr credential show -n $ACR --query "passwords[0].value" -o tsv)"
+$SB_CONNECTIONSTRING = "<connection-string>"
 
-az login
-az account set -s "Microsoft Azure Sponsorship"
-az upgrade
 # az extension add --source https://workerappscliextension.blob.core.windows.net/azure-cli-extension/containerapp-0.2.0-py2.py3-none-any.whl
 # az provider register --namespace Microsoft.Web
 
@@ -18,8 +15,8 @@ az upgrade
 
 # Creo workspace
 az monitor log-analytics workspace create --resource-group $RESOURCE_GROUP --workspace-name $LOG_ANALYTICS_WORKSPACE
-$LOG_ANALYTICS_WORKSPACE_CLIENT_ID=(az monitor log-analytics workspace show --query customerId -g $RESOURCE_GROUP -n $LOG_ANALYTICS_WORKSPACE --out tsv)
-$LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET=(az monitor log-analytics workspace get-shared-keys --query primarySharedKey -g $RESOURCE_GROUP -n $LOG_ANALYTICS_WORKSPACE --out tsv)
+$LOG_ANALYTICS_WORKSPACE_CLIENT_ID = (az monitor log-analytics workspace show --query customerId -g $RESOURCE_GROUP -n $LOG_ANALYTICS_WORKSPACE --out tsv)
+$LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET = (az monitor log-analytics workspace get-shared-keys --query primarySharedKey -g $RESOURCE_GROUP -n $LOG_ANALYTICS_WORKSPACE --out tsv)
 
 # Creo Environment
 az containerapp env create `
@@ -36,7 +33,7 @@ az containerapp env create `
 # #   --location "$LOCATION" `
 # #   --sku Standard_RAGRS `
 # #   --kind StorageV2
-$STORAGE_ACCOUNT_KEY=(az storage account keys list --resource-group $RESOURCE_GROUP --account-name $STORAGE_ACCOUNT --query '[0].value' --out tsv)
+$STORAGE_ACCOUNT_KEY = (az storage account keys list --resource-group $RESOURCE_GROUP --account-name $STORAGE_ACCOUNT --query '[0].value' --out tsv)
 
 # Deploy app:
 az containerapp create `
@@ -47,7 +44,7 @@ az containerapp create `
   --registry-login-server $ACR `
   --registry-username $ACR_Login `
   --registry-password $ACR_Password `
-  --image $ACR/web:test `
+  --image $ACR/web:latest `
   --target-port 80 `
   --ingress 'external' `
   --min-replicas 1 `
@@ -55,10 +52,9 @@ az containerapp create `
   --enable-dapr `
   --dapr-app-port 80 `
   --dapr-app-id cloudchampion-web `
-  --dapr-components ./components.yaml `
-  --verbose
+  --dapr-components ./components.yaml
 
-  az containerapp create `
+az containerapp create `
   --name order `
   --resource-group $RESOURCE_GROUP `
   --environment $CONTAINERAPPS_ENVIRONMENT `
@@ -72,5 +68,4 @@ az containerapp create `
   --enable-dapr `
   --dapr-app-port 80 `
   --dapr-app-id cloudchampion-order `
-  --dapr-components ./components.yaml `
-  --verbose
+  --dapr-components ./components.yaml
